@@ -33,11 +33,23 @@ Vector = {
 };
 
 
-var KEYBOARD = {
+var Keyboard = {
     ESC: 27,
-    UP: 1,
-    DOWN: 1,
-    LEFT: 1,
-    RIGHT: 1,
-    SPACE: 1
+    UP: 38,
+    DOWN: 40,
+    LEFT: 37,
+    RIGHT: 39,
+    SPACE: 32
 };
+
+
+
+var clamp = function(min, max, value){
+    if(value > max){
+        value = max;
+    }
+    if(value < min){
+        value = min;
+    }
+    return value;
+}

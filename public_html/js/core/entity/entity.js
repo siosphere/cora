@@ -5,7 +5,8 @@
 
 var Entity = Cora.system.create({
     actions: {
-        CREATE: 'ENTITY_CREATE'
+        CREATE: 'ENTITY_CREATE',
+        UPDATE: 'ENTITY_UPDATE'
     },
     init: function(){
         Cora.register(Cora.events.ENTITY, this.receive);
@@ -50,6 +51,9 @@ var Entity = Cora.system.create({
             case Entity.actions.CREATE:
                 Entity._createEntity(payload.payload);
                 break;
+            case Entity.actions.UPDATE:
+                Entity._updateEntity(payload.payload);
+            break;
         }
     },
     /**
@@ -63,16 +67,15 @@ var Entity = Cora.system.create({
         }
         entity.loaded = true;
         entity.id = this.entities.length;
+        entity.init(); //init once we have an id
         entity.sync();
         this.entities.push(entity);
         Scene.get().add( entity.getMesh() );
-        console.log('added to scene');
     },
     
     _createEntity: function(params){
         var entity = Object.create(EntityModel);
         entity = MERGE(entity, params);
-        entity.init();
         return entity;
         //this.place(entity);
     },
@@ -80,7 +83,6 @@ var Entity = Cora.system.create({
     createByName: function(name, params){
         if(typeof(Entity.available_entities[name]) !== 'undefined'){
             var entity = MERGE(Entity.available_entities[name], params);
-            entity.init();
             return entity;
         }
     },
@@ -92,6 +94,38 @@ var Entity = Cora.system.create({
         var entity = Object.create(EntityModel);
         entity = MERGE(entity, params);
         this.available_entities[name] = entity;
+    },
+    
+    _updateEntity: function(payload){
+        var index = null;
+        Entity.entities.forEach(function(_entity, i){
+            if(_entity.id === payload.entity_id){
+                index = i;
+            }
+        });
+        
+        if(index === null){
+            return false;
+        }
+        
+        for(var i in payload.update){
+            Entity.entities[index].set(i, payload.update[i]);
+        }
+        
+        
+        
+        //this.entities[index] = entity;
+        
+        //this.place(entity);
+    },
+    getEntity: function(entity_id){
+        var entity = false;
+        this.entities.forEach(function(_entity){
+            if(_entity.id === entity_id){
+                entity = _entity;
+            }
+        });
+        return entity;
     }
 });
 
