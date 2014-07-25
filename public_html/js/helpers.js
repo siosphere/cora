@@ -33,6 +33,16 @@ Vector = {
 };
 
 
+var Rect = function(params){
+    return MERGE({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+    }, params);
+};
+
+
 var Keyboard = {
     ESC: 27,
     UP: 38,

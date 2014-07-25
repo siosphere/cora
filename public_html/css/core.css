@@ -25,5 +25,19 @@ html, body{
     top: 0;
     left: 0;
     z-index: 33;
-    color:#fff;
+    color:#000;
+}
+
+#game_canvas{
+    z-index: 10;
+    position:absolute;
+    top:0;
+    left:0;
+}
+
+#game_canvas_3d{
+    z-index:20;
+    position:absolute;
+    top:0;
+    left:0;
 }

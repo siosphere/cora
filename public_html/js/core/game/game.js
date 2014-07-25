@@ -32,6 +32,15 @@ var Game = Cora.system.create({
 
 var dev_level = {
     entities: [{
+                name: 'background',
+                params: {
+                    position: {
+                        x: 0,
+                        y: 0,
+                        z: 0
+                    }
+                }
+            },{
             name: 'player',
             params: {
                 position: {

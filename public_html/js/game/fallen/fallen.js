@@ -14,7 +14,7 @@ var Fallen = Cora.system.create({
         this.load_entities();
     },
     tick: function(){
-        
+        Fallen.movement();
     },
     setup_ui: function(){
         this.main_menu = UI.createPanel({
@@ -40,57 +40,65 @@ var Fallen = Cora.system.create({
         
     },
     load_entities: function(){
+        SCRIPT('./game/fallen/entities/background.js');
         SCRIPT('./game/fallen/entities/test.js');
         SCRIPT('./game/fallen/entities/player.js');
     },
     input: function(payload){
         switch(payload.action){
             case Input.action.KEYUP:
-                Fallen.keyUp(payload.payload);
+                //Fallen.keyUp(payload.payload);
+                Input._keyUp[payload.payload.key] = true;
+                Input._keyDown[payload.payload.key] = false;
+                break;
+            case Input.action.KEYDOWN:
+                Input._keyUp[payload.payload.key] = false;
+                Input._keyDown[payload.payload.key] = true;
+                //Fallen.keyUp(payload.payload);
                 break;
         }
     },
-    keyUp: function(payload){
+    movement: function(){
         
         var player = Entity.getEntity(Fallen.player_entity_id);
             if(!player){
                 return false;
             }
         
-        if(payload.key === Keyboard.UP){
+        if(Input._keyDown[Keyboard.UP]){
             //movement, move to movement handler
             var velocity = player.velocity;
             velocity.y += 1;
-            Entity.dispatch(Entity.actions  .UPDATE, {
+            Entity.dispatch(Entity.actions.UPDATE, {
                 entity_id: player.id,
                 update: {
                     velocity: velocity
                 }
             });
-        } else if(payload.key === Keyboard.DOWN){
+        } else if(Input._keyDown[Keyboard.DOWN]){
             //movement, move to movement handler
             var velocity = player.velocity;
             velocity.y -= 1;
-            Entity.dispatch(Entity.actions  .UPDATE, {
+            Entity.dispatch(Entity.actions.UPDATE, {
                 entity_id: player.id,
                 update: {
                     velocity: velocity
                 }
             });
-        } else if(payload.key === Keyboard.LEFT){
+        } else if(Input._keyDown[Keyboard.LEFT]){
             //movement, move to movement handler
             var velocity = player.velocity;
             velocity.x -= 1;
-            Entity.dispatch(Entity.actions  .UPDATE, {
+            Entity.dispatch(Entity.actions.UPDATE, {
                 entity_id: player.id,
                 update: {
                     velocity: velocity
                 }
             });
-        } else if(payload.key === Keyboard.RIGHT){
+        } else if(Input._keyDown[Keyboard.RIGHT]){
             var velocity = player.velocity;
             velocity.x += 1;
-            Entity.dispatch(Entity.actions  .UPDATE, {
+            Entity.dispatch(Entity.actions.UPDATE, {
                 entity_id: player.id,
                 update: {
                     velocity: velocity

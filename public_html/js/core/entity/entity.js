@@ -22,6 +22,13 @@ var Entity = Cora.system.create({
             }
         });
     },
+    draw: function(){
+        Entity.entities.forEach(function(entity){
+            if(entity.visible){
+                entity.draw();
+            }
+        });
+    },
     start: function(){
         
     },
@@ -70,7 +77,12 @@ var Entity = Cora.system.create({
         entity.init(); //init once we have an id
         entity.sync();
         this.entities.push(entity);
-        Scene.get().add( entity.getMesh() );
+        if(entity.getMesh()){
+            Scene.get().add( entity.getMesh() );
+        } else {
+            //add to 2d canvas
+            Scene.addSprite( entity.getSprite() );
+        }
     },
     
     _createEntity: function(params){
@@ -131,6 +143,7 @@ var Entity = Cora.system.create({
 
 
 var EntityModel = {
+    visible: true,
     needs_update: false,
     can_tick: false,
     tick: function(){
@@ -147,6 +160,12 @@ var EntityModel = {
             mesh.position.y = this.position.y;
             mesh.position.z = this.position.z;
         }
+        var sprite = this.getSprite();
+        if(typeof(sprite) !== 'undefined' && sprite !== null){
+            sprite.position.x = this.position.x;
+            sprite.position.y = this.position.y; //backwards for canvas2D
+            sprite.position.z = 0;
+        }
         this.needs_update = false;
     },
     getMesh: function(){
@@ -154,6 +173,12 @@ var EntityModel = {
             return this.mesh();
         }
         return this.mesh;
+    },
+    getSprite: function(){
+        if(typeof(this.sprite) === 'function'){
+            return this.sprite();
+        }
+        return this.sprite;
     },
     loaded: false,
     location: new Vector.zero(),
@@ -167,5 +192,11 @@ var EntityModel = {
     },
     init: function(){
         
+    },
+    draw: function(){
+        var sprite = this.getSprite();
+        if(sprite !== false){
+            sprite.draw();
+        }
     }
 };

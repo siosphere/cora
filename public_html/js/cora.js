@@ -56,6 +56,8 @@ var Cora = new function(){
          */
         _loadSystems: function(callback){
             this._loadSystem('core/scene');
+            this._loadSystem('core/asset');
+            this._loadSystem('core/animation');
             this._loadSystem('core/camera');
             this._loadSystem('core/renderer');
             this._loadSystem('core/entity');
