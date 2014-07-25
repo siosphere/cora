@@ -14,6 +14,16 @@ var Fallen = Cora.system.create({
         this.load_entities();
     },
     tick: function(){
+        if(!Game.running){
+            return false;
+        }
+        //console.log(Game.clock.getElapsedTime());
+        if(Game.clock.getElapsedTime() - Fallen.spawnTime > Fallen.lastSpawn){
+            Fallen.lastSpawn = Game.clock.getElapsedTime();
+            Fallen.addEnemy();
+        }
+        
+        
         Fallen.movement();
     },
     setup_ui: function(){
@@ -43,6 +53,7 @@ var Fallen = Cora.system.create({
         SCRIPT('./game/fallen/entities/background.js');
         SCRIPT('./game/fallen/entities/test.js');
         SCRIPT('./game/fallen/entities/player.js');
+        SCRIPT('./game/fallen/entities/enemy.js');
     },
     input: function(payload){
         switch(payload.action){
@@ -105,5 +116,18 @@ var Fallen = Cora.system.create({
                 }
             });
         }
+    },
+    spawnTime: 2,
+    lastSpawn: 0,
+    enemies: [],
+    /**
+     * 
+     * @param {type} enemy
+     * @returns {undefined}
+     */
+    addEnemy: function(){
+        //var enemy = Entity.createByName('enemy');
+        Entity.place(Entity.createByName('enemy'));
+        //this.enemies.push(enemy);
     }
 });

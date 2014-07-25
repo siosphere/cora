@@ -4,8 +4,10 @@
 
 
 var Game = Cora.system.create({
+    running: false,
     init: function(){
         this.tick_index = Cora.register(Cora.events.TICK, this.tick);
+        this.clock = new THREE.Clock(true);
         this.__proto__.init();
     },
     
@@ -19,7 +21,7 @@ var Game = Cora.system.create({
     
     begin: function(){
         
-        
+        Game.running = true;
         //todo move to level loader
         dev_level.entities.forEach(function(entity){
             var entity = Entity.createByName(entity.name, entity.params);

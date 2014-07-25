@@ -4,6 +4,8 @@
 
 
 var FallenPlayer = Entity.create('player', {
+    height: 69,
+    width: 115,
     init: function(){
         
         var sourceRect = new Rect({
@@ -19,9 +21,9 @@ var FallenPlayer = Entity.create('player', {
         
         this.sprite = new AnimatedSprite({
             texture: texture,
-            frameWidth: 115,
-            frameHeight: 69,
-            frameCount: 5,
+            frameWidth: this.width,
+            frameHeight: this.height,
+            frameCount: 7,
             sourceRect: sourceRect
         });
         
@@ -51,7 +53,28 @@ var FallenPlayer = Entity.create('player', {
             position.y += velocity.y * speed;
         }
         position.z += velocity.z * speed;
+        
+        
+        if(position.y < 0){
+            velocity.y = 0;
+            position.y = 0;
+        }
+        if(position.y + this.height > window.innerHeight){
+            velocity.y = 0;
+            position.y = window.innerHeight - this.height;
+        }
+        
+         if(position.x < 0){
+            velocity.x = 0;
+            position.x = 0;
+        }
+        if(position.x + this.width > window.innerWidth){
+            velocity.x = 0;
+            position.x = window.innerWidth - this.width;
+        }
+        
         this.set('position', position);
+        
         this.sprite.position = this.position;
         //console.log(this.position);
         
@@ -75,5 +98,7 @@ var FallenPlayer = Entity.create('player', {
         this.set('velocity', velocity);
     },
     velocity: new Vector.zero(),
-    speed: 0.2
+    speed: 0.2,
+    health: 100,
+    collide: true
 });
