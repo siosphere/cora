@@ -8,7 +8,7 @@ var MainMenu = React.createClass({
         if(!this.props.visible){
             return null;
         }
-        return (<div><ul>
+        return (<div className="main-menu"><ul>
                 <li onClick={this.click}>Start Game</li>
         </ul></div>);
     },
