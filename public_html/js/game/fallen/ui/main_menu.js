@@ -8,8 +8,16 @@ var MainMenu = React.createClass({
         if(!this.props.visible){
             return null;
         }
+        
+        var menu = [];
+        if(Game.running){
+            menu.push((<li onClick={this.click}>Resume Game</li>));
+        } else {
+            menu.push((<li onClick={this.click}>Start Game</li>));
+        }
+        
         return (<div className="main-menu"><ul>
-                <li onClick={this.click}>Start Game</li>
+                {menu}
         </ul></div>);
     },
     click: function(){
