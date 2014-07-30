@@ -18,6 +18,16 @@ var Asset = Cora.system.create({
         Asset.images.push(image);
         return image;
     },
+    loadAudio: function(path, callback){
+        var audio = new Asset.audio({
+            path: path,
+            onLoad: callback,
+            id: Asset.sounds.length
+        });
+        audio.load();
+        Asset.sounds.push(audio);
+        return audio;
+    },
     image: function(params){
         return MERGE({
             loaded: false,
@@ -34,6 +44,28 @@ var Asset = Cora.system.create({
                 };
             },
             imageAsset: null
+        }, params);
+    },
+    audio: function(params){
+        return MERGE({
+            loaded: false,
+            load: function(){
+                this.audioAsset = new Audio(this.path);
+                var $me = this;
+                this.audioAsset.onload = function(){
+                    $me.loaded = true;
+                    if(typeof( $me.onLoad) === 'function'){
+                        $me.onLoad.apply(me);
+                    }
+                };
+            },
+            audioAsset: null,
+            play: function(){
+                this.audioAsset.play();
+            },
+            pause: function(){
+                this.audioAsset.pause();
+            }
         }, params);
     },
     tick: function(){

@@ -4,6 +4,7 @@
 
 
 var Enemy = Entity.create('enemy', {
+    type: Entity.type.NPC,
     init: function(){
         this.sourceRect = new Rect({
             x: 0,
@@ -48,6 +49,8 @@ var Enemy = Entity.create('enemy', {
         
         this.position.x = window.innerWidth + 115;
         this.position.y = Math.random() * (window.innerHeight - this.height);
+        
+        this.deathSound = Asset.loadAudio('media/sound/explosion.wav');
     },
     can_tick: true,
     tick: function(){
@@ -70,12 +73,23 @@ var Enemy = Entity.create('enemy', {
     height: 61,
     collide: true,
     damage: 5,
+    health: 15,
     onCollide:function(target){
-        target.health -= this.damage;
+        target.updateHealth(target.health - this.damage);
+        this.die();
+    },
+    die: function(){
         this.sprite = this.explosion;
         this.alive = false;
         this.diedTime = Game.clock.getElapsedTime();
         this.collide = false;
+        this.deathSound.play();
+    },
+    onDamage: function(damage, entity){
+        this.health -= damage;
+        if(this.health <= 0){
+            this.die();
+        }
     },
     alive: true,
     diedTime: null

@@ -28,12 +28,14 @@ var Background = Entity.create('background', {
         
         var texture1 = new Texture({
             image: Asset.loadImage('media/bgLayer1.png'),
-            tile: 'x'
+            tile: 'x',
+            stretch: true
         });
         
         var texture2 = new Texture({
             image: Asset.loadImage('media/bgLayer2.png'),
-            tile: 'x'
+            tile: 'x',
+            stretch: true
         });
         
         var sourceRect = new Rect({

@@ -14,12 +14,24 @@ var MainMenu = React.createClass({
     },
     click: function(){
         //hide the menu, start the game
-        UI.dispatch(UI.actions.UPDATE_PANEL, {
+        
+        if(Game.running){
+            var state = Game.state.RESUME;
+        } else {
+            var state = Game.state.BEGIN;
+        }
+        
+        //change the game state
+        Game.dispatch(Game.actions.STATE_CHANGE, {
+            state: state
+        });
+        
+        /*UI.dispatch(UI.actions.UPDATE_PANEL, {
             panel_id: this.props.id,
             update: {
                 visible: false
             }
         });
-        Game.begin();
+        Game.begin();*/
     }
 });

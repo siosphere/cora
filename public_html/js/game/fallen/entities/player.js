@@ -8,6 +8,9 @@ var FallenPlayer = Entity.create('player', {
     width: 115,
     init: function(){
         
+        
+        this.weapon = Entity.createByName('base_weapon');
+        
         var sourceRect = new Rect({
             x: 0,
             y: 0,
@@ -39,6 +42,9 @@ var FallenPlayer = Entity.create('player', {
         Fallen.player_entity_id = this.id;
         
         
+    },
+    fire: function(){
+        this.weapon.fire();
     },
     can_tick: true,
     tick: function(){
@@ -100,5 +106,14 @@ var FallenPlayer = Entity.create('player', {
     velocity: new Vector.zero(),
     speed: 0.2,
     health: 100,
-    collide: true
+    collide: true,
+    updateHealth: function(health){
+        this.health = health;
+        UI.dispatch(UI.actions.UPDATE_PANEL, {
+            panel_id: Fallen.hud.id,
+            update: {
+                health: health
+            }
+        });
+    }
 });

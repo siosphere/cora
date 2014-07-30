@@ -6,6 +6,7 @@
 var Texture = function(params){
     return MERGE({
         tile: false,
+        stretch: false,
         draw: function(){
             
             if(this.image === null){
@@ -27,10 +28,23 @@ var Texture = function(params){
                 Renderer.get2D().save();
                 //Renderer.get2D().rect(-this.x, -this.y, this.width, this.height);
                 this.image.imageAsset.height = this.height + 'px';
-                var pattern = Renderer.surface2DContext.createPattern(this.image.imageAsset, patternType);
-                Renderer.get2D().fillStyle = pattern;
-                Renderer.get2D().translate(this.x, this.y);
-                Renderer.get2D().fillRect(-this.x, -this.y, this.width, this.height);
+                if(!this.stretch){
+                    Renderer.get2D().translate(this.x, this.y);
+                    var pattern = Renderer.surface2DContext.createPattern(this.image.imageAsset, patternType);
+                    Renderer.get2D().fillStyle = pattern;
+                    Renderer.get2D().fillRect(-this.x, -this.y, this.width, this.height);
+                } else {
+                     if(this.tile === 'x'){
+                        Renderer.get2D().translate(start_X, this.y);
+                        var start_X = this.x;
+                        var end_X = this.width;
+                        while(start_X <= end_X){
+                            Renderer.get2D().drawImage(this.image.imageAsset,this.sourceX,this.sourceY, this.sourceWidth, this.sourceHeight,
+                            start_X, this.y, this.sourceWidth, this.height);
+                            start_X += this.sourceWidth;
+                        }
+                     }
+                }
                 //Renderer.get2D().fill();
                 Renderer.get2D().restore();
             } else {

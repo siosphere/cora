@@ -131,7 +131,8 @@ var Cora = new function(){
             ENTITY: 'CORA_EVENT_ENTITY',
             UI:     'CORA_EVENT_UI',
             TICK: 'CORA_EVENT_TICK',
-            INPUT: 'CORA_EVENT_INPUT'
+            INPUT: 'CORA_EVENT_INPUT',
+            GAME: 'CORA_EVENT_GAME'
         }
     };
 };

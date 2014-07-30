@@ -27,6 +27,9 @@ Vector = {
             y: 0,
             z: 0
         };
+    },
+    copy: function(input){
+        return $.extend(new Vector.zero(), input);
     }
 };
 

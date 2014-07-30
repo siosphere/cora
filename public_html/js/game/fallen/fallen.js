@@ -5,13 +5,18 @@
 var Fallen = Cora.system.create({
     game_state: null,
     player_entity_id: null,
+    getPlayer: function(){
+        return Entity.getEntity(this.player_entity_id);
+    },
     init: function(){
+        Cora.register(Cora.events.GAME, this.game_state_change);
         Cora.register(Cora.events.TICK, this.tick);
         Cora.register(Cora.events.INPUT, this.input);
     },
     start: function(){
         this.setup_ui();
         this.load_entities();
+        this.load_sound();
     },
     tick: function(){
         if(!Game.running){
@@ -25,6 +30,7 @@ var Fallen = Cora.system.create({
         
         
         Fallen.movement();
+        Fallen.combat();
     },
     setup_ui: function(){
         this.main_menu = UI.createPanel({
@@ -33,17 +39,34 @@ var Fallen = Cora.system.create({
             visible: true
         });
         UI.register(this.main_menu);
+        
+        this.hud = UI.createPanel({
+            view: UserHud,
+            health: 0,
+            visible: false
+        });
+        
+        UI.register(this.hud);
+        
         var $me = this;
+        
         Cora.register(Cora.events.INPUT, function(payload){
             if(payload.action == Input.action.KEYUP){
                 var payload = payload.payload;
                 if(payload.key == 27){
-                    UI.dispatch(UI.actions.UPDATE_PANEL, {
-                        panel_id: $me.main_menu.id,
-                        update: {
-                            visible: !$me.main_menu.visible
-                        }
-                    });
+                    switch(Game.current_state){
+                        case Game.state.PAUSE:
+                            Game.dispatch(Game.actions.STATE_CHANGE, {
+                                state: Game.state.RESUME
+                            });
+                            break;
+                        case Game.state.BEGIN:
+                        case Game.state.RESUME:
+                            Game.dispatch(Game.actions.STATE_CHANGE, {
+                                state: Game.state.PAUSE
+                            });
+                            break;
+                    }
                 }
             }
         });
@@ -54,6 +77,14 @@ var Fallen = Cora.system.create({
         SCRIPT('./game/fallen/entities/test.js');
         SCRIPT('./game/fallen/entities/player.js');
         SCRIPT('./game/fallen/entities/enemy.js');
+        SCRIPT('./game/fallen/entities/base_weapon.js');
+    },
+    load_sound: function(){
+        this.game_music = Asset.loadAudio('media/sound/gameMusic.mp3', function(){
+        });
+        
+        this.menu_music = Asset.loadAudio('media/sound/menuMusic.mp3');
+        this.menu_music.play();
     },
     input: function(payload){
         switch(payload.action){
@@ -69,12 +100,22 @@ var Fallen = Cora.system.create({
                 break;
         }
     },
+    combat: function(){
+        var player = Fallen.getPlayer();
+        if(!player){
+            return false;
+        }
+        
+        if(Input._keyDown[Keyboard.SPACE]){
+            player.fire();
+        }
+    },
     movement: function(){
         
         var player = Entity.getEntity(Fallen.player_entity_id);
-            if(!player){
-                return false;
-            }
+        if(!player){
+            return false;
+        }
         
         if(Input._keyDown[Keyboard.UP]){
             //movement, move to movement handler
@@ -129,5 +170,54 @@ var Fallen = Cora.system.create({
         //var enemy = Entity.createByName('enemy');
         Entity.place(Entity.createByName('enemy'));
         //this.enemies.push(enemy);
+    },
+    on_begin: function(){
+        UI.dispatch(UI.actions.UPDATE_PANEL, {
+            panel_id: this.hud.id,
+            update: {
+                health: Fallen.getPlayer().health
+            }
+        });
+    },
+    game_state_change: function(payload){
+        var action = payload.action;
+        var payload = payload.payload;
+        switch(action){
+            case Game.actions.STATE_CHANGED:
+                var new_state = payload.state;
+                switch(new_state){
+                    case Game.state.BEGIN:
+                         Game.begin();
+                         Fallen.on_begin();
+                         Fallen.menu_music.pause();
+                         Fallen.game_music.play();
+                         Fallen.togglePanel(Fallen.main_menu);
+                         Fallen.togglePanel(Fallen.hud);
+                        break;
+                    case Game.state.RESUME:
+                        Fallen.menu_music.pause();
+                        Fallen.game_music.play();
+                        Fallen.togglePanel(Fallen.main_menu);
+                        Fallen.togglePanel(Fallen.hud);
+                        break;
+                    case Game.state.PAUSE:
+                        Fallen.menu_music.play();
+                        Fallen.game_music.pause();
+                        Fallen.togglePanel(Fallen.main_menu);
+                        Fallen.togglePanel(Fallen.hud);
+                        break;
+                    case Game.state.END:
+                        break;
+                }
+                break;
+        }
+    },
+    togglePanel: function(panel){
+        UI.dispatch(UI.actions.UPDATE_PANEL, {
+            panel_id: panel.id,
+            update: {
+                visible: !panel.visible
+            }
+        });
     }
 });

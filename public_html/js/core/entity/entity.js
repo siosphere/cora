@@ -8,17 +8,26 @@ var Entity = Cora.system.create({
         CREATE: 'ENTITY_CREATE',
         UPDATE: 'ENTITY_UPDATE'
     },
+    type: {
+        NPC: 'ENTITY_TYPE_NPC',
+        OTHER: 'ENTITY_TYPE_OTHER'
+    },
     init: function(){
         Cora.register(Cora.events.ENTITY, this.receive);
         Cora.register(Cora.events.TICK, this.tick);
     },
     tick: function(){
+        if(Game.current_state !== Game.state.BEGIN && Game.current_state !== Game.state.RESUME){
+            return;
+        }
         Entity.entities.forEach(function(entity){
-            if(entity.needs_update){
-                entity.sync();
-            }
-            if(entity.can_tick){
-                entity.tick();
+            if(entity !== false){
+                if(entity.needs_update){
+                    entity.sync();
+                }
+                if(entity.can_tick){
+                    entity.tick();
+                }
             }
         });
         
@@ -71,7 +80,7 @@ var Entity = Cora.system.create({
     },
     draw: function(){
         Entity.entities.forEach(function(entity){
-            if(entity.visible){
+            if(entity !== false && entity.visible){
                 entity.draw();
             }
         });
@@ -143,8 +152,8 @@ var Entity = Cora.system.create({
         }
         var entity = Entity.entities[entity_index];
         entity.remove();
-        
-        Entity.entities.splice(entity_index, 1);
+        Entity.entities[entity_index] = false;
+        //Entity.entities.splice(entity_index, 1);
     },
     
     getEntityIndex: function(entity_id){
@@ -214,6 +223,14 @@ var Entity = Cora.system.create({
             }
         });
         return entity;
+    },
+    filterType: function(type){
+        return function(entity){
+            if(entity.type !== type){
+                return false;
+            }
+            return true;
+        };
     }
 });
 

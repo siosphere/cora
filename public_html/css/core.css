@@ -41,3 +41,20 @@ html, body{
     top:0;
     left:0;
 }
+
+
+.hud{
+    z-index: 30;
+    position:absolute;
+    top:0;
+    left:0;
+    font-family:'Oswald', sans-serif;
+    text-transform: uppercase;
+    color:#fff;
+    font-size: 36px;
+    opacity: 0.8;
+}
+
+.danger{
+    color:#ff0000;
+}
