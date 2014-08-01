@@ -6,6 +6,7 @@
 var FallenPlayer = Entity.create('player', {
     height: 69,
     width: 115,
+    type: Entity.type.MODEL,
     init: function(){
         
         

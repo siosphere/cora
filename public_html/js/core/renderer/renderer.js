@@ -39,7 +39,17 @@ var Renderer = Cora.system.create({
         //clear canvas
         Renderer.get2D().clearRect(0,0,Renderer.getCanvas().width,Renderer.getCanvas().height);
         Renderer.get().render(Scene.get(), Camera.get());
-        Entity.draw();
+        
+        Renderer.get2D().save();
+        Renderer.get2D().translate(Camera.x, Camera.y);
+        //draw in order of layers
+        Scene.layers.sort(function(a, b){
+            return a.index - b.index;
+        }).forEach(function(layer){
+            Entity.draw(layer);
+        });
+        Renderer.get2D().restore();
+        //Entity.draw();
         //Renderer.get2D().fill();
     },
     get: function(){

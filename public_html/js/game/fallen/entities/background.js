@@ -65,8 +65,14 @@ var Background = Entity.create('background', {
     },
     can_tick: true,
     tick: function(){
-        this.layer1.position.x -= 1;
-        this.layer2.position.x -= 1.5;
+        var player = Fallen.getPlayer();
+        var pPosition = player.position;
+        if(pPosition.x >= window.innerWidth - 300){
+        }
+        Camera.x -= 1;
+        //this.layer1.position.x -= 1;
+        this.layer2.position.x = Camera.x - 1.5;
+        
         //var position = this.get('position');
         //position.x -= 0.1;
         //this.set('position', position);

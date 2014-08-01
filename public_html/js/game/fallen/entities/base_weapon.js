@@ -14,13 +14,13 @@ var BaseWeapon = Entity.create('base_weapon', {
         
         if(this.last_fired === null || this.last_fired + this.rate <= Game.clock.getElapsedTime()){
             
-             var player = Fallen.getPlayer();
+            var player = Fallen.getPlayer();
             var player_position = player.position;
             var projectile = Entity.createByName('projectile');
             projectile.position = Vector.copy(player.position);
             projectile.position.x += player.width;
             projectile.position.y = projectile.position.y + (player.height / 2);
-            Entity.place(projectile);
+            Entity.place(projectile, player.layer_id);
             
             this.last_fired = Game.clock.getElapsedTime();
             //find what entities line within my sights

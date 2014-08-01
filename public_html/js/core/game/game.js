@@ -49,13 +49,7 @@ var Game = Cora.system.create({
     
     begin: function(){
         
-        Game.running = true;
-        //todo move to level loader
-        dev_level.entities.forEach(function(entity){
-            var entity = Entity.createByName(entity.name, entity.params);
-            Entity.place(entity);
-        });
-        
+        Game.running = true;       
     },
     /**
      * Dispatch an entity action
@@ -68,28 +62,19 @@ var Game = Cora.system.create({
             action: action,
             payload: payload
         });
+    },
+    
+    loadLevel: function(level){
+        World.width = level.world.width;
+        World.height = level.world.height;
+        //create scenes
+        level.layers.forEach(function(layer){
+            Scene.addLayer(layer);
+            layer.entities.forEach(function(entity){
+                var entity = Entity.createByName(entity.name, entity.params);
+                Entity.place(entity, layer.id);
+            });
+        });
+        
     }
 });
-
-
-var dev_level = {
-    entities: [{
-                name: 'background',
-                params: {
-                    position: {
-                        x: 0,
-                        y: 0,
-                        z: 0
-                    }
-                }
-            },{
-            name: 'player',
-            params: {
-                position: {
-                    x: 0,
-                    y: 0,
-                    z: 0
-                }
-            }
-    }]
-};

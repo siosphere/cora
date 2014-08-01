@@ -3,6 +3,8 @@
  */
 
 var Camera = Cora.system.create({
+    x: 0,
+    y: 0,
     init: function(){
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
         this.__proto__.init();

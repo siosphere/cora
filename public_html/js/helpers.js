@@ -5,11 +5,15 @@
 
 
 var SCRIPT = function(path, callback){
-    var script = document.createElement('script');
-    script.src = './js/' + path;
-    script.onload = callback;
-    document.head.appendChild(script);
-    console.log(script);
+    if(typeof(Asset) !== 'undefined'){
+        Asset.loadScript(path, callback);
+    } else {
+        var script = document.createElement('script');
+        script.src = './js/' + path;
+        script.onload = callback;
+        document.head.appendChild(script);
+        console.log(script);
+    }
 };
 
 var MERGE = function(obj_a, obj_b){

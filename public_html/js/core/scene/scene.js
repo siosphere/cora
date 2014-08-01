@@ -4,7 +4,11 @@
 
 
 var Scene = Cora.system.create({
-    scene: null,
+    type: {
+        canvas2D: 'SCENE_TYPE_CANVAS2D',
+        canvas3D: 'SCENE_TYPE_CANVAS3D'
+    },
+    layers: [],
     init: function(){
         this.scene = new THREE.Scene();
         this.__proto__.init();
@@ -12,14 +16,11 @@ var Scene = Cora.system.create({
     get: function(){
         return this.scene;
     },
-    _sprites: [],
-    addSprite: function(sprite){
-        this._sprites.push(sprite);
-    },
-    drawSprites: function(){
+    addLayer: function(layer){
         
-        /*this._sprites.forEach(function(sprite){
-            sprite.draw();
-        });*/
+        if(typeof(layer.index) === 'undefined'){
+            layer.index = 1;
+        }
+        this.layers.push(layer);
     }
 });

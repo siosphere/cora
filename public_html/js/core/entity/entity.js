@@ -10,11 +10,13 @@ var Entity = Cora.system.create({
     },
     type: {
         NPC: 'ENTITY_TYPE_NPC',
+        MODEL: 'ENTITY_TYPE_MODEL',
         OTHER: 'ENTITY_TYPE_OTHER'
     },
     init: function(){
         Cora.register(Cora.events.ENTITY, this.receive);
         Cora.register(Cora.events.TICK, this.tick);
+        Cora.register(Cora.events.ASSET, this.assets_loaded);
     },
     tick: function(){
         if(Game.current_state !== Game.state.BEGIN && Game.current_state !== Game.state.RESUME){
@@ -41,6 +43,13 @@ var Entity = Cora.system.create({
         collision.forEach(function(a){
             collision.forEach(function(b){
                 if(a.id === b.id){
+                    return;
+                }
+                
+                if(a.layer_id !== b.layer_id){
+                    return;
+                }
+                if(a.collision_types.indexOf(b.type) === -1){
                     return;
                 }
                 
@@ -78,8 +87,13 @@ var Entity = Cora.system.create({
         });
         
     },
-    draw: function(){
-        Entity.entities.forEach(function(entity){
+    draw: function(layer){
+        Entity.entities.filter(function(entity){
+            if(entity.layer_id === layer.id){
+                return true;
+            }
+            return false;
+        }).forEach(function(entity){
             if(entity !== false && entity.visible){
                 entity.draw();
             }
@@ -124,12 +138,13 @@ var Entity = Cora.system.create({
      * @param {type} entity
      * @returns {undefined}
      */
-    place: function(entity){
+    place: function(entity, layer_id){
         if(entity.loaded){
             return;
         }
         entity.loaded = true;
         entity.id = this.entities.length;
+        entity.layer_id = layer_id;
         this.entities.push(entity);
         entity.init(); //init once we have an id
         entity.sync();
@@ -186,12 +201,26 @@ var Entity = Cora.system.create({
      */
     create: function(name, params){
         var entity = new EntityModel();
+        /*if(typeof(params.base) !== 'undefined'){
+            entity = MERGE(entity, entity.base);
+        }*/
         entity = MERGE(entity, params);
         this.available_entities[name] = function(params){
             return MERGE(entity, params);
         };
     },
-    
+    assets_loaded: function(payload){
+        if(payload.loaded === true){
+            for(var i in Entity.available_entities){
+                var entity = new Entity.available_entities[i]();
+                if(typeof(entity.base) !== 'undefined'){
+                    Entity.available_entities[i] = function(params){
+                        return MERGE(Entity.createByName(entity.base, entity), params);
+                    };
+                }
+            }
+        }
+    },
     
     _updateEntity: function(payload){
         var index = null;
@@ -237,6 +266,7 @@ var Entity = Cora.system.create({
 
 var EntityModel = function(){
     return {
+        type: Entity.type.MODEL,
         visible: true,
         needs_update: false,
         can_tick: false,
@@ -297,6 +327,7 @@ var EntityModel = function(){
 
         },
         collide: false,
+        collision_types: [Entity.type.MODEL],
         remove: function(){
             
         }

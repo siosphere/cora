@@ -63,6 +63,7 @@ var Cora = new function(){
             this._loadSystem('core/entity');
             this._loadSystem('core/input');
             this._loadSystem('core/ui');
+            this._loadSystem('core/world');
             this._loadSystem('core/game');
             
             this._loadSystem('game/fallen');
@@ -132,7 +133,8 @@ var Cora = new function(){
             UI:     'CORA_EVENT_UI',
             TICK: 'CORA_EVENT_TICK',
             INPUT: 'CORA_EVENT_INPUT',
-            GAME: 'CORA_EVENT_GAME'
+            GAME: 'CORA_EVENT_GAME',
+            ASSET: 'CORA_EVENT_ASSET'
         }
     };
 };

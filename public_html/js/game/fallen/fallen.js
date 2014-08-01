@@ -12,22 +12,22 @@ var Fallen = Cora.system.create({
         Cora.register(Cora.events.GAME, this.game_state_change);
         Cora.register(Cora.events.TICK, this.tick);
         Cora.register(Cora.events.INPUT, this.input);
+        Cora.register(Cora.events.ASSET, this.assets_loaded);
     },
     start: function(){
-        this.setup_ui();
+        //this.setup_ui();
         this.load_entities();
         this.load_sound();
+    },
+    assets_loaded: function(payload){
+        if(payload.loaded === true){
+            Fallen.setup_ui();
+        }
     },
     tick: function(){
         if(!Game.running){
             return false;
         }
-        //console.log(Game.clock.getElapsedTime());
-        if(Game.clock.getElapsedTime() - Fallen.spawnTime > Fallen.lastSpawn){
-            Fallen.lastSpawn = Game.clock.getElapsedTime();
-            Fallen.addEnemy();
-        }
-        
         
         Fallen.movement();
         Fallen.combat();
@@ -74,10 +74,13 @@ var Fallen = Cora.system.create({
     },
     load_entities: function(){
         SCRIPT('./game/fallen/entities/background.js');
+        SCRIPT('./game/fallen/entities/spawner.js');
         SCRIPT('./game/fallen/entities/test.js');
         SCRIPT('./game/fallen/entities/player.js');
         SCRIPT('./game/fallen/entities/enemy.js');
+        SCRIPT('./game/fallen/entities/enemy2.js');
         SCRIPT('./game/fallen/entities/base_weapon.js');
+        SCRIPT('./game/fallen/levels/dev_level.js');
     },
     load_sound: function(){
         this.game_music = Asset.loadAudio('media/sound/gameMusic.mp3', function(){
@@ -158,20 +161,8 @@ var Fallen = Cora.system.create({
             });
         }
     },
-    spawnTime: 2,
-    lastSpawn: 0,
-    enemies: [],
-    /**
-     * 
-     * @param {type} enemy
-     * @returns {undefined}
-     */
-    addEnemy: function(){
-        //var enemy = Entity.createByName('enemy');
-        Entity.place(Entity.createByName('enemy'));
-        //this.enemies.push(enemy);
-    },
     on_begin: function(){
+        Game.loadLevel(dev_level);
         UI.dispatch(UI.actions.UPDATE_PANEL, {
             panel_id: this.hud.id,
             update: {

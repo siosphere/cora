@@ -7,6 +7,7 @@ var Asset = Cora.system.create({
     images: [],
     meshes: [],
     sounds: [],
+    scripts: [],
     all_loaded: false,
     loadImage: function(path, callback){
         var image = new Asset.image({
@@ -28,6 +29,16 @@ var Asset = Cora.system.create({
         Asset.sounds.push(audio);
         return audio;
     },
+    loadScript: function(path, callback){
+        var script = new Asset.script({
+            path: 'js/' + path,
+            onLoad: callback,
+            id: Asset.scripts.length
+        });
+        script.load();
+        Asset.scripts.push(script);
+        return script;
+    },
     image: function(params){
         return MERGE({
             loaded: false,
@@ -37,7 +48,6 @@ var Asset = Cora.system.create({
                 var $me = this;
                 this.imageAsset.onload = function(){
                     $me.loaded = true;
-                    console.log('loaded!');
                     if(typeof( $me.onLoad) === 'function'){
                         $me.onLoad.apply(me);
                     }
@@ -68,15 +78,51 @@ var Asset = Cora.system.create({
             }
         }, params);
     },
+    script: function(params){
+        return MERGE({
+            loaded: false,
+            load: function(){
+                this.scriptAsset = document.createElement('script');
+                this.scriptAsset.src = this.path;
+                var $me = this;
+                this.scriptAsset.onload = function(){
+                    $me.loaded = true;
+                    if(typeof( $me.onLoad) === 'function'){
+                        $me.onLoad.apply(me);
+                    }
+                };
+                document.head.appendChild(this.scriptAsset);
+            },
+            scriptAsset: null
+        }, params);
+    },
+    init: function(){
+        Cora.register(Cora.events.TICK, this.tick);
+    },
     tick: function(){
+        if(Asset.all_loaded){
+            //remove from tick
+            return false;
+        }
         var all_loaded = true;
         
-        this.images.forEach(function(image){
+        Asset.images.forEach(function(image){
             if(!image.loaded){
                 all_loaded = false;
             }
         });
         
-        this.all_loaded = all_loaded;
+        Asset.scripts.forEach(function(script){
+            if(!script.loaded){
+                all_loaded = false;
+            }
+        });
+        if(all_loaded){
+            //send signal that we are all loaded
+            Cora.dispatch(Cora.events.ASSET, {
+                loaded: true
+            });
+        }
+        Asset.all_loaded = all_loaded;
     }
 });
