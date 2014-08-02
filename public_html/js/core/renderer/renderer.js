@@ -41,7 +41,7 @@ var Renderer = Cora.system.create({
         Renderer.get().render(Scene.get(), Camera.get());
         
         Renderer.get2D().save();
-        Renderer.get2D().translate(Camera.x, Camera.y);
+        Renderer.get2D().translate(-Camera.x, -Camera.y);
         //draw in order of layers
         Scene.layers.sort(function(a, b){
             return a.index - b.index;

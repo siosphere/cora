@@ -13,16 +13,32 @@ var MainMenu = React.createClass({
         if(Game.running){
             menu.push((<li onClick={this.click}>Resume Game</li>));
         } else {
-            menu.push((<li onClick={this.click}>Start Game</li>));
+            menu.push((<li onClick={this.click}>Create Game</li>));
+            menu.push((<li onClick={this.join}>Join Game</li>));
         }
         
         return (<div className="main-menu"><ul>
                 {menu}
         </ul></div>);
     },
-    click: function(){
+    join: function(){
+        //show join panel
         //hide the menu, start the game
         
+        if(Game.running){
+            var state = Game.state.RESUME;
+        } else {
+            var state = Game.state.BEGIN;
+        }
+        
+        //change the game state
+        Game.dispatch(Game.actions.STATE_CHANGE, {
+            state: state
+        });
+    },
+    click: function(){
+        //hide the menu, start the game
+        Network.is_host = true;
         if(Game.running){
             var state = Game.state.RESUME;
         } else {

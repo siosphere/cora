@@ -33,10 +33,10 @@ var AnimatedSprite = function(params){
                 return;
             }
             this.update();
-            this.texture.x = this.position.x;
-            this.texture.y = this.position.y;
-            this.texture.width = this.frameWidth;
-            this.texture.height = this.frameHeight;
+            this.texture.x = this.position.x * Camera.z;
+            this.texture.y = this.position.y * Camera.z;
+            this.texture.width = this.frameWidth * Camera.z;
+            this.texture.height = this.frameHeight * Camera.z;
             this.texture.draw();
         },
         update: function(){

@@ -6,7 +6,9 @@
 var Entity = Cora.system.create({
     actions: {
         CREATE: 'ENTITY_CREATE',
-        UPDATE: 'ENTITY_UPDATE'
+        UPDATE: 'ENTITY_UPDATE',
+        SPAWN: 'ENTITY_SPAWN',
+        NETWORK_UPDATE: 'ENTITY_NETWORK_UPDATE'
     },
     type: {
         NPC: 'ENTITY_TYPE_NPC',
@@ -128,8 +130,16 @@ var Entity = Cora.system.create({
             case Entity.actions.CREATE:
                 Entity._createEntity(payload.payload);
                 break;
+            case Entity.actions.SPAWN:
+                var my_entity = Entity.createByName(payload.payload.entity_name, payload.payload.entity_params);
+                console.log('placing', payload.payload.entity_name, payload.payload.entity_params);
+                Entity.place(my_entity, payload.payload.layer_id);
+                break;
             case Entity.actions.UPDATE:
                 Entity._updateEntity(payload.payload);
+            break;
+            case Entity.actions.NETWORK_UPDATE:
+                Entity._networkUpdate(payload.payload);
             break;
         }
     },
@@ -146,7 +156,12 @@ var Entity = Cora.system.create({
         entity.id = this.entities.length;
         entity.layer_id = layer_id;
         this.entities.push(entity);
-        entity.init(); //init once we have an id
+        entity.spawn(); //spawn
+        
+        if(entity.networkable && Network.is_host){
+            Network.entity(entity);
+        }
+        
         entity.sync();
         if(entity.getMesh()){
             Scene.get().add( entity.getMesh() );
@@ -192,6 +207,7 @@ var Entity = Cora.system.create({
     createByName: function(name, params){
         if(typeof(Entity.available_entities[name]) !== 'undefined'){
             var entity = new Entity.available_entities[name](params); //MERGE(new Entity.available_entities[name](), params);
+            entity.init();
             return entity;
         }
     },
@@ -204,8 +220,9 @@ var Entity = Cora.system.create({
         /*if(typeof(params.base) !== 'undefined'){
             entity = MERGE(entity, entity.base);
         }*/
+        params.name = name;
         entity = MERGE(entity, params);
-        this.available_entities[name] = function(params){
+        return this.available_entities[name] = function(params){
             return MERGE(entity, params);
         };
     },
@@ -237,12 +254,22 @@ var Entity = Cora.system.create({
         for(var i in payload.update){
             Entity.entities[index].set(i, payload.update[i]);
         }
-        
-        
-        
         //this.entities[index] = entity;
         
         //this.place(entity);
+    },
+    _networkUpdate: function(payload){
+        Entity.entities.filter(function(entity){
+            return entity.networkable;
+        }).forEach(function(_entity, index){
+            payload.entities.forEach(function(network_entity){
+                if(_entity.network_id === network_entity.network_id){
+                    for(var i in network_entity.params){
+                        _entity[i] = network_entity.params[i];
+                    }
+                }
+            });
+        });
     },
     getEntity: function(entity_id){
         var entity = false;
@@ -266,6 +293,7 @@ var Entity = Cora.system.create({
 
 var EntityModel = function(){
     return {
+        networkable: false,
         type: Entity.type.MODEL,
         visible: true,
         needs_update: false,
@@ -316,6 +344,9 @@ var EntityModel = function(){
         },
         init: function(){
 
+        },
+        spawn: function(){
+            
         },
         draw: function(){
             var sprite = this.getSprite();

@@ -87,7 +87,7 @@ var Fallen = Cora.system.create({
         });
         
         this.menu_music = Asset.loadAudio('media/sound/menuMusic.mp3');
-        this.menu_music.play();
+        //this.menu_music.play();
     },
     input: function(payload){
         switch(payload.action){

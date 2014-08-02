@@ -41,13 +41,6 @@ var dev_level = {
                 spawn_type: 'enemy',
                 continuous: true
             }
-        }, {
-            name: 'entity_spawner',
-            params: {
-                rate: 5,
-                spawn_type: 'enemy2',
-                continuous: true
-            }
         }]
     }]
 };

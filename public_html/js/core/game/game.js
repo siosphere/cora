@@ -71,8 +71,21 @@ var Game = Cora.system.create({
         level.layers.forEach(function(layer){
             Scene.addLayer(layer);
             layer.entities.forEach(function(entity){
-                var entity = Entity.createByName(entity.name, entity.params);
-                Entity.place(entity, layer.id);
+                var my_entity = Entity.createByName(entity.name, entity.params);
+                if(Network.is_host || my_entity.networkable === false){
+                    Entity.place(my_entity, layer.id);
+                    if(Network.is_host && my_entity.networkable){
+                        //tell other clients to create this entity
+                        Network.dispatch('all', Cora.events.ENTITY, {
+                            action: Entity.actions.SPAWN,
+                            payload: {
+                                entity_name: entity.name,
+                                entity_params: entity.params,
+                                layer_id: layer.id
+                            }
+                        });
+                    }
+                }
             });
         });
         

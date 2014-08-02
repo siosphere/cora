@@ -5,7 +5,13 @@
 
 var Enemy = Entity.create('enemy', {
     type: Entity.type.NPC,
+    networkable: true,
     init: function(){
+        
+        Network.start_table(this.name);
+        Network.variable('position');
+        Network.end_table();
+        
         this.sourceRect = new Rect({
             x: 0,
             y: 0,
@@ -46,11 +52,11 @@ var Enemy = Entity.create('enemy', {
         });
         
         this.position = new Vector.zero();
-        
+        this.deathSound = Asset.loadAudio('media/sound/explosion.wav');
+    },
+    spawn: function(){
         this.position.x = window.innerWidth + 115;
         this.position.y = Math.random() * (window.innerHeight - this.height);
-        
-        this.deathSound = Asset.loadAudio('media/sound/explosion.wav');
     },
     can_tick: true,
     tick: function(){

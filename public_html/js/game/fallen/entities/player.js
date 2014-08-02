@@ -4,11 +4,16 @@
 
 
 var FallenPlayer = Entity.create('player', {
+    networkable: true,
     height: 69,
     width: 115,
     type: Entity.type.MODEL,
+    client_id: null,
     init: function(){
-        
+        Network.start_table(this.name);
+        Network.variable('position');
+        Network.variable('client_id');
+        Network.end_table();
         
         this.weapon = Entity.createByName('base_weapon');
         
@@ -40,9 +45,13 @@ var FallenPlayer = Entity.create('player', {
         
         Fallen.player_entity_id = this.id;*/
         
-        Fallen.player_entity_id = this.id;
-        
-        
+        this.velocity = new Vector.zero();
+    },
+    spawn: function(){
+        if(Fallen.player_entity_id === null && (this.client_id === null || this.client_id === Network.client_id)){
+            console.log('setting new fallen player id:', this.id);
+            Fallen.player_entity_id = this.id;
+        }
     },
     fire: function(){
         this.weapon.fire();
@@ -66,18 +75,18 @@ var FallenPlayer = Entity.create('player', {
             velocity.y = 0;
             position.y = 0;
         }
-        if(position.y + this.height > window.innerHeight){
+        if(position.y + this.height > window.innerHeight + Math.abs(Camera.y)){
             velocity.y = 0;
-            position.y = window.innerHeight - this.height;
+            position.y = (window.innerHeight - this.height) + Math.abs(Camera.y);
         }
         
          if(position.x < 0){
             velocity.x = 0;
             position.x = 0;
         }
-        if(position.x + this.width > window.innerWidth){
+        if(position.x + this.width > window.innerWidth + Math.abs(Camera.x)){
             velocity.x = 0;
-            position.x = window.innerWidth - this.width;
+            position.x = (window.innerWidth - this.width) + Math.abs(Camera.x);
         }
         
         this.set('position', position);
@@ -104,7 +113,7 @@ var FallenPlayer = Entity.create('player', {
 
         this.set('velocity', velocity);
     },
-    velocity: new Vector.zero(),
+    velocity: null,
     speed: 0.2,
     health: 100,
     collide: true,

@@ -65,13 +65,19 @@ var Background = Entity.create('background', {
     },
     can_tick: true,
     tick: function(){
-        var player = Fallen.getPlayer();
+        /*var player = Fallen.getPlayer();
         var pPosition = player.position;
         if(pPosition.x >= window.innerWidth - 300){
-        }
-        Camera.x -= 1;
-        //this.layer1.position.x -= 1;
-        this.layer2.position.x = Camera.x - 1.5;
+        }*/
+        
+        this.background.position.x = Camera.screenX(0);
+        
+        Camera.x += 1;
+        //Camera.y = this.track(Camera.x, Camera.y, Camera.y, 10).y;
+        
+        this.layer1.position.x += 1;
+        this.layer2.position.x += 1.5;
+        //this.layer2.position.x = Camera.screenX(1);
         
         //var position = this.get('position');
         //position.x -= 0.1;

@@ -35,9 +35,9 @@ var Texture = function(params){
                     Renderer.get2D().fillRect(-this.x, -this.y, this.width, this.height);
                 } else {
                      if(this.tile === 'x'){
+                        var start_X = Camera.x - this.x; //part that is on screen
                         Renderer.get2D().translate(start_X, this.y);
-                        var start_X = this.x;
-                        var end_X = this.width;
+                        var end_X = this.x + this.width;
                         while(start_X <= end_X){
                             Renderer.get2D().drawImage(this.image.imageAsset,this.sourceX,this.sourceY, this.sourceWidth, this.sourceHeight,
                             start_X, this.y, this.sourceWidth, this.height);

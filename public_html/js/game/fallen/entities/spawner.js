@@ -9,6 +9,9 @@ var EntitySpawner = Entity.create('entity_spawner', {
     can_tick: true,
     lastSpawn: false,
     tick: function(){
+        if(!Network.is_host){
+            return;
+        }
         //spawn at my location
         //console.log(Game.clock.getElapsedTime());
         if(!this.lastSpawn || Game.clock.getElapsedTime() - this.rate > this.lastSpawn){
