@@ -3,6 +3,7 @@
  */
 
 var Fallen = Cora.system.create({
+    players: [],
     game_state: null,
     player_entity_id: null,
     getPlayer: function(){
@@ -110,19 +111,22 @@ var Fallen = Cora.system.create({
         }
         
         if(Input._keyDown[Keyboard.SPACE]){
-            player.fire();
+            player.doFire();
         }
     },
-    movement: function(){
+    movement: function(player){
         
         var player = Entity.getEntity(Fallen.player_entity_id);
         if(!player){
             return false;
         }
+        //for this specific player, look at their input state
+        
+        
         
         if(Input._keyDown[Keyboard.UP]){
             //movement, move to movement handler
-            var velocity = player.velocity;
+            var velocity = Vector.copy(player.velocity);
             velocity.y += 1;
             Entity.dispatch(Entity.actions.UPDATE, {
                 entity_id: player.id,
@@ -132,7 +136,7 @@ var Fallen = Cora.system.create({
             });
         } else if(Input._keyDown[Keyboard.DOWN]){
             //movement, move to movement handler
-            var velocity = player.velocity;
+            var velocity = Vector.copy(player.velocity);
             velocity.y -= 1;
             Entity.dispatch(Entity.actions.UPDATE, {
                 entity_id: player.id,
@@ -142,7 +146,7 @@ var Fallen = Cora.system.create({
             });
         } else if(Input._keyDown[Keyboard.LEFT]){
             //movement, move to movement handler
-            var velocity = player.velocity;
+            var velocity = Vector.copy(player.velocity);
             velocity.x -= 1;
             Entity.dispatch(Entity.actions.UPDATE, {
                 entity_id: player.id,
@@ -151,7 +155,7 @@ var Fallen = Cora.system.create({
                 }
             });
         } else if(Input._keyDown[Keyboard.RIGHT]){
-            var velocity = player.velocity;
+            var velocity = Vector.copy(player.velocity);
             velocity.x += 1;
             Entity.dispatch(Entity.actions.UPDATE, {
                 entity_id: player.id,

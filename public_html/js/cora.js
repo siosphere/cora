@@ -38,6 +38,7 @@ var Cora = new function(){
         },
         
         start: function(){
+            //window.resizeTo(800,600)
             this._loadSystems(function(){
                 this._initSystems();
                 this._startSystems();

@@ -14,7 +14,7 @@ var BaseWeapon = Entity.create('base_weapon', {
         
         if(this.last_fired === null || this.last_fired + this.rate <= Game.clock.getElapsedTime()){
             
-            var player = Fallen.getPlayer();
+            var player = Entity.getEntity(this.player_id);
             var player_position = player.position;
             var projectile = Entity.createByName('projectile');
             projectile.position = Vector.copy(player.position);

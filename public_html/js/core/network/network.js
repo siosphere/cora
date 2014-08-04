@@ -8,8 +8,10 @@ var Network = Cora.system.create({
     conn: null,
     connected: false,
     is_host: false,
-    update_time: 0.01, //in ms
+    update_time: 0, //in ms
     last_update: null,
+    states:[], //hold our states
+    max_states: 5, //how many states to hold
     type: {
         CREATE: 'NETWORK_TYPE_CREATE',
         UPDATE: 'NETWORK_TYPE_UPDATE',
@@ -56,6 +58,8 @@ var Network = Cora.system.create({
                 var new_player = Entity.createByName('player', {
                     client_id: event.client_id
                 });
+                
+                Fallen.players.push(new_player);
                 //console.log(new_player, Fallen.getPlayer().layer_id);
                 
                 Entity.place(new_player, Fallen.getPlayer().layer_id); //as my player
@@ -67,6 +71,25 @@ var Network = Cora.system.create({
                 break;
         }
     },
+    spawnEntity: function(entity){
+        
+        var params = {};
+        if(typeof(Network.network_send_tables[entity.name]) !== 'undefined'){
+            Network.network_send_tables[entity.name].forEach(function(v){
+                params[v] = entity[v];
+            });
+        }
+            
+        Network.dispatch('all', Cora.events.ENTITY, {
+                action: Entity.actions.SPAWN,
+                payload: {
+                    entity_name: entity.name,
+                    network_id: entity.network_id,
+                    entity_params: params,
+                    layer_id: entity.layer_id
+                }
+        });
+    },
     syncEntities: function(client_id){
         //console.log('syncing entities',  Network.entities);
         //send specific client message
@@ -76,8 +99,8 @@ var Network = Cora.system.create({
             //params would be our current watched variables
             var params = {};
             
-            if(typeof(Network.network_tables[entity.name]) !== 'undefined'){
-                Network.network_tables[entity.name].forEach(function(v){
+            if(typeof(Network.network_send_tables[entity.name]) !== 'undefined'){
+                Network.network_send_tables[entity.name].forEach(function(v){
                     params[v] = entity[v];
                 });
             }
@@ -101,23 +124,6 @@ var Network = Cora.system.create({
     entity: function(entity){
         entity.network_id = GUID();
     },
-    _updateEntity: function(payload){
-        //if this entity is networkable
-        if(typeof(Network.for_update[payload.entity_id]) !== 'undefined'){
-            //send this update across
-            Network.queueData({
-                entity_id: payload.entity_id,
-                update: payload.update
-            });
-        }
-    },
-    queueData: function(data){
-        if(typeof(Network.next_send.entities) === 'undefined'){
-            Network.next_send.entities = [];
-        }
-        
-        Network.next_send.entities.push(data);
-    },
     tick: function(){
         //look for updates in our entities
         //
@@ -125,19 +131,20 @@ var Network = Cora.system.create({
         if(Network.last_update !== null && Game.clock.getElapsedTime() - Network.update_time < Network.last_update){
             return; //update every 10 ms
         }
-        console.log('update');
+        
         Network.last_update = Game.clock.getElapsedTime();
         
         var update = false;
         var payload = {
-            entities: []
+            entities: [],
+            client_id: Network.client_id
         };
         Entity.entities.filter(function(entity){
             return entity.networkable && entity.needs_update;
         }).forEach(function(entity){
             var params = {};
-            if(typeof(Network.network_tables[entity.name]) !== 'undefined'){
-                Network.network_tables[entity.name].forEach(function(v){
+            if(typeof(Network.network_send_tables[entity.name]) !== 'undefined'){
+                Network.network_send_tables[entity.name].forEach(function(v){
                     params[v] = entity[v];
                 });
             }
@@ -145,10 +152,11 @@ var Network = Cora.system.create({
                 network_id: entity.network_id,
                 params: params
             });
-            
+            //console.log(payload.entities);
+            //console.log(payload.entities);
+            entity.needs_update = false;
             update = true;
         });
-        
         if(update){
             Network.dispatch('all', Cora.events.ENTITY, {
                 action: Entity.actions.NETWORK_UPDATE,
@@ -164,22 +172,24 @@ var Network = Cora.system.create({
     onMessage: function(e){
         var event = JSON.parse(e.data);
         if(event !== false){
-            
-            switch(event.client){
-                case 'host':
-                    if(Network.is_host){
+            if(event.client_id !== Network.client_id){
+                Cora.dispatch(event.type, event.payload);
+                /*switch(event.client){
+                    case 'host':
+                        if(Network.is_host){
+                            Cora.dispatch(event.type, event.payload);
+                        }
+                        break;
+                    case 'all':
                         Cora.dispatch(event.type, event.payload);
-                    }
-                    break;
-                case 'all':
-                    Cora.dispatch(event.type, event.payload);
-                    break;
-                default:
-                    //for specific client TODO
-                    if(event.client === Network.client_id){
-                        Cora.dispatch(event.type, event.payload);
-                    }
-                    break;
+                        break;
+                    default:
+                        //for specific client TODO
+                        if(event.client === Network.client_id){
+                            Cora.dispatch(event.type, event.payload);
+                        }
+                        break;
+                }*/
             }
         }
     },
@@ -206,17 +216,49 @@ var Network = Cora.system.create({
             });
         }
     },
-    network_tables: {},
-    current_network_table: null,
-    start_table: function(entity_name){
-        Network.network_tables[entity_name] = [];
-        Network.current_network_table = entity_name;
-        Network.variable('network_id');
+    network_send_tables: {},
+    network_recv_tables: {},
+    current_network_send_table: null,
+    current_network_recv_table: null,
+    send_table: function(entity_name){
+        Network.network_send_tables[entity_name] = [];
+        Network.current_network_send_table = entity_name;
+        Network.send_variable('network_id');
     },
-    variable: function(name){
-        Network.network_tables[Network.current_network_table].push(name);
+    send_variable: function(name){
+        Network.network_send_tables[Network.current_network_send_table].push(name);
+        
     },
-    end_table: function(){
-        Network.current_network_table = null;
+    end_send_table: function(){
+        Network.current_network_send_table = null;
+    },
+    recv_table: function(entity_name){
+        Network.network_recv_tables[entity_name] = [];
+        Network.current_network_recv_table = entity_name;
+        Network.recv_variable('network_id', function(entity, value){
+            entity.network_id = value;
+        });
+    },
+    recv_variable: function(name, callback){
+        Network.network_recv_tables[Network.current_network_recv_table].push({
+            name: name,
+            callback: callback
+        });
+        
+    },
+    end_recv_table: function(){
+        Network.current_network_recv_table = null;
     }
 });
+
+
+/**
+ * Button state, player position
+ * 
+ * @returns {NetworkInput.Anonym$10}
+ */
+var NetworkInput = function(){
+    return {
+        
+    };
+};

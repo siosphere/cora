@@ -17,7 +17,10 @@ var EntitySpawner = Entity.create('entity_spawner', {
         if(!this.lastSpawn || Game.clock.getElapsedTime() - this.rate > this.lastSpawn){
             this.lastSpawn = Game.clock.getElapsedTime();
             //Fallen.addEnemy();
-            Entity.place(Entity.createByName(this.spawn_type), this.layer_id);
+            var entity = Entity.createByName(this.spawn_type);
+            Entity.place(entity, this.layer_id);
+            Network.spawnEntity(entity);
+            
         }
     },
     draw: function(){

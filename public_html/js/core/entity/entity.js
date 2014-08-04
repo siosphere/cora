@@ -20,6 +20,7 @@ var Entity = Cora.system.create({
         Cora.register(Cora.events.TICK, this.tick);
         Cora.register(Cora.events.ASSET, this.assets_loaded);
     },
+    last_network_update: null,
     tick: function(){
         if(Game.current_state !== Game.state.BEGIN && Game.current_state !== Game.state.RESUME){
             return;
@@ -32,6 +33,25 @@ var Entity = Cora.system.create({
                 if(entity.can_tick){
                     entity.tick();
                 }
+                /*if(entity.networkable && Entity.last_network_update !== null){
+                    //update entity with latest from network
+                    Entity.entities.filter(function(entity){
+                        return entity.networkable;
+                    }).forEach(function(_entity, index){
+                        Entity.last_network_update.entities.forEach(function(network_entity){
+                            if(_entity.network_id === network_entity.network_id){
+                                for(var i in network_entity.params){
+                                    //lerp
+                                    //_entity[i] = LERP(network_entity.params[i], _entity[i]);
+                                    _entity[i] = LERP(_entity[i], network_entity.params[i]);
+                                    //_entity[i] = network_entity.params[i];
+                                }
+                            }
+                        });
+                    });
+                    Entity.last_network_update = null;
+                }*/
+                //entity.needs_update = false;
             }
         });
         
@@ -132,7 +152,7 @@ var Entity = Cora.system.create({
                 break;
             case Entity.actions.SPAWN:
                 var my_entity = Entity.createByName(payload.payload.entity_name, payload.payload.entity_params);
-                console.log('placing', payload.payload.entity_name, payload.payload.entity_params);
+                console.log('NETWORK SPAWN', payload.payload.entity_name, payload.payload.entity_params.position.x, my_entity.position.x);
                 Entity.place(my_entity, payload.payload.layer_id);
                 break;
             case Entity.actions.UPDATE:
@@ -152,6 +172,9 @@ var Entity = Cora.system.create({
         if(entity.loaded){
             return;
         }
+        
+        console.log('about to spawn:', entity.position.x);
+        
         entity.loaded = true;
         entity.id = this.entities.length;
         entity.layer_id = layer_id;
@@ -207,7 +230,7 @@ var Entity = Cora.system.create({
     createByName: function(name, params){
         if(typeof(Entity.available_entities[name]) !== 'undefined'){
             var entity = new Entity.available_entities[name](params); //MERGE(new Entity.available_entities[name](), params);
-            entity.init();
+            //entity.init();
             return entity;
         }
     },
@@ -223,6 +246,7 @@ var Entity = Cora.system.create({
         params.name = name;
         entity = MERGE(entity, params);
         return this.available_entities[name] = function(params){
+            entity.init();
             return MERGE(entity, params);
         };
     },
@@ -250,26 +274,34 @@ var Entity = Cora.system.create({
         if(index === null){
             return false;
         }
-        
+        var changed = false;
         for(var i in payload.update){
-            Entity.entities[index].set(i, payload.update[i]);
+            if(!EQUAL(Entity.entities[index][i], payload.update[i])){
+                Entity.entities[index][i] =  payload.update[i];
+                Entity.entities[index].needs_update = true;
+            }
         }
         //this.entities[index] = entity;
         
         //this.place(entity);
     },
     _networkUpdate: function(payload){
-        Entity.entities.filter(function(entity){
-            return entity.networkable;
-        }).forEach(function(_entity, index){
-            payload.entities.forEach(function(network_entity){
-                if(_entity.network_id === network_entity.network_id){
-                    for(var i in network_entity.params){
-                        _entity[i] = network_entity.params[i];
+        if(payload.client_id !== Network.client_id){
+            //Entity.last_network_update = payload;
+            payload.entities.forEach(function(update_entity){
+                
+                Entity.entities.forEach(function(entity){
+                    if(entity.network_id === update_entity.network_id){
+                        var recv_variables = Network.network_recv_tables[entity.name];
+                        recv_variables.forEach(function(recv_var){
+                            recv_var.callback(entity, update_entity.params[recv_var.name]);
+                        });
                     }
-                }
+                });
             });
-        });
+            
+            
+        }
     },
     getEntity: function(entity_id){
         var entity = false;
@@ -318,7 +350,7 @@ var EntityModel = function(){
                 sprite.position.y = this.position.y; //backwards for canvas2D
                 sprite.position.z = 0;
             }
-            this.needs_update = false;
+            //this.needs_update = false;
         },
         getMesh: function(){
             if(typeof(this.mesh) === 'function'){
@@ -338,8 +370,16 @@ var EntityModel = function(){
             return this[i];
         },
         set: function(i, value){
-            this[i] = value;
-            this.needs_update = true;
+            
+            var same = this[i] === value;
+            if(typeof(this[i]) === 'object'){
+                same = JSON.stringify(this[i]) === JSON.stringify(value);
+            }
+            
+            if(!same){
+                this[i] = value;
+                this.needs_update = true;
+            }
             return this;
         },
         init: function(){

@@ -80,3 +80,31 @@ var GUID = (function() {
            s4() + '-' + s4() + s4() + s4();
   };
 })();
+
+
+var EQUAL = function(a, b){
+    if(typeof(a) === 'object' && typeof(b) === 'object'){
+        return JSON.stringify(a) === JSON.stringify(b);
+    }
+    return a === b;
+};
+
+function LERP(a, b, f)
+{
+    if(typeof(f) === 'undefined'){
+        f = 1.0;
+    }
+    
+    if(typeof(a) === 'object'){
+        var temp = {};
+        for(var i in a){
+            temp[i] = LERP(a[i], b[i], f);
+        }
+        return temp;
+    }
+    if(typeof(a) === 'number'){
+        return a + f * (b - a);
+    }
+    
+    return a;
+}

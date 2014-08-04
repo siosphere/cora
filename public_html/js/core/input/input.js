@@ -4,6 +4,7 @@
 
 
 var Input = Cora.system.create({
+    states: {}, //states per player
     _keyDown: [],
     _keyUp: [],
     init: function(){
@@ -29,3 +30,9 @@ var Input = Cora.system.create({
         KEYUP: 'INPUT_ACTION_KEYUP'
     }
 });
+
+var InputState = function(){
+    return {
+        keys: {}
+    };
+};

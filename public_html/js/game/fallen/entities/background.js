@@ -21,8 +21,8 @@ var Background = Entity.create('background', {
         this.background = new AnimatedSprite({
             texture: texture,
             sourceRect: sourceRect,
-            frameWidth: window.innerWidth,
-            frameHeight: window.innerHeight,
+            frameWidth: 1920,
+            frameHeight: 1080,
             frameCount: 0
         });
         
@@ -48,16 +48,16 @@ var Background = Entity.create('background', {
         this.layer1 = new AnimatedSprite({
             texture: texture1,
             sourceRect: sourceRect,
-            frameWidth: window.innerWidth,
-            frameHeight: window.innerHeight,
+            frameWidth: 1920,
+            frameHeight: 1080,
             frameCount: 0
         });
         
         this.layer2 = new AnimatedSprite({
             texture: texture2,
             sourceRect: sourceRect,
-            frameWidth: window.innerWidth,
-            frameHeight: window.innerHeight,
+            frameWidth: 1920,
+            frameHeight: 1080,
             frameCount: 0
         });
         
@@ -72,7 +72,7 @@ var Background = Entity.create('background', {
         
         this.background.position.x = Camera.screenX(0);
         
-        Camera.x += 1;
+        //Camera.x += 1;
         //Camera.y = this.track(Camera.x, Camera.y, Camera.y, 10).y;
         
         this.layer1.position.x += 1;
